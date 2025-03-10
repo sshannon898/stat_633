@@ -138,14 +138,52 @@ cra_prep_function <- function(x) {
 cra_data <- do.call(rbind, lapply(data_list, cra_prep_function))
 
 cra_data_temp <- cra_data %>%
-  mutate(across(.cols = c(8:13), ~ as.numeric(.x))) %>%
+  mutate(across(.cols = c(3, 8:13), ~ as.numeric(.x))) %>%
   mutate(
          sum_n_loans = rowSums(.[, c(8,10,12)]),
-         sum_loan_amt = rowSums(.[, c(9,11,13)]))
+         sum_loan_amt = rowSums(.[, c(9,11,13)])) %>%
+  filter(year >= 2004) %>% select(-assessment_area_number)
 
 library(data.table)
 
 fwrite(cra_data_temp, paste0(local_path, "cra_data.csv"))
+
+trans_fwf <- c(10,1,4,30,40,25,2,10,10,10,10)
+col_names2 <- c("resp_id",
+                "agency",
+                "year",
+                "name",
+                "addr",
+                "city",
+                "state",
+                "zip",
+                "tax_id",
+                "id_rssd",
+                "assets")
+data_list2 <- list.files("C:/Users/sshan/Downloads/transmittal/")
+
+trans_prep_function <- function(x) {
+  
+  file_str <- paste0("C:/Users/sshan/Downloads/transmittal/",x,"/")
+  dat_name <- list.files(paste0(file_str),pattern = "\\.dat$", full.names = FALSE)
+  message(file_str)
+    trans <- read_fwf(paste0(file_str,dat_name),
+                         col_positions = fwf_widths(trans_fwf),
+                         col_types = cols(.default = "c"))
+    colnames(trans) <- col_names2
+  return(trans)
+}
+
+
+trans_data <- do.call(rbind, lapply(data_list2, trans_prep_function)) %>%
+  filter(year >= 2004) %>% select(-4, -5, -6, -7, -8, -9) %>% mutate(year = as.numeric(year),
+                                                                     id_rssd = as.numeric(id_rssd),
+                                                                     assets = as.numeric(assets))
+
+
+fwrite(trans_data, paste0(local_path, "transmittal.csv"))
+
+
 
 
 
