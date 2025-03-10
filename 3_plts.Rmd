@@ -66,6 +66,8 @@ county_acs_data <- left_join(county_data, acs_data, by = c("year" = "Year", "FIP
 
 ```{r}
 
+# https://sshannon898.shinyapps.io/stat_633/
+
 plot1_data <- cra_assets %>%
   filter(state <= 56) %>%
   mutate(state = str_pad(state, width = 2, pad = "0")) %>% 
@@ -136,5 +138,5 @@ ggplotly(plot2,
 ```
 
 
-
+https://sshannon898.shinyapps.io/stat_633/
 
