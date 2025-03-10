@@ -26,7 +26,7 @@ col_names <- c("table_id",
               "msa/md",
               "assessment_area_number",
               "partial_county_indicator",
-              "split_copunty",
+              "split_county",
               "pop_class",
               "income_group",
               "report_level",
@@ -56,7 +56,8 @@ cra_prep_function <- function(x) {
     colnames(cra_data) <- col_names
     cra_data <- cra_data %>%
       filter(table_id == "D1-1",
-             report_level == "040") %>%
+             report_level == "040"
+             ) %>%
       select(-c(1, 5, 6,11,12,13,14,15,22,23,24,25))
   } 
   # 1997 - 2003
@@ -70,7 +71,8 @@ cra_prep_function <- function(x) {
     colnames(cra_data) <- col_names
     cra_data <- cra_data %>%
       filter(table_id == "D1-1",
-             report_level == "040") %>%
+             report_level == "040"
+             ) %>%
       select(-c(1, 5, 6,11,12,13,14,15,22,23,24,25))
     
   } 
@@ -85,7 +87,8 @@ cra_prep_function <- function(x) {
     colnames(cra_data) <- col_names
     cra_data <- cra_data %>%
       filter(table_id == "D1-1",
-             report_level == "040") %>%
+             report_level == "040"
+             ) %>%
       select(-c(1, 5, 6,11,12,13,14,15,22,23,24,25)) 
   }
   # 2007
@@ -99,7 +102,8 @@ cra_prep_function <- function(x) {
     colnames(cra_data) <- col_names
     cra_data <- cra_data %>%
       filter(table_id == "D1-1",
-             report_level == "040") %>%
+             report_level == "040"
+             ) %>%
       select(-c(1, 5, 6,11,12,13,14,15,22,23,24,25))
   }
   # 2016 - 2024
@@ -127,7 +131,8 @@ cra_prep_function <- function(x) {
     colnames(cra_data) <- col_names
     cra_data <- cra_data %>%
       filter(table_id == "D1-1",
-             report_level == "040") %>%
+             report_level == "040"
+             ) %>%
       select(-c(1, 5, 6,11,12,13,14,15,22,23,24,25))
   }
   
@@ -138,15 +143,17 @@ cra_prep_function <- function(x) {
 cra_data <- do.call(rbind, lapply(data_list, cra_prep_function))
 
 cra_data_temp <- cra_data %>%
-  mutate(across(.cols = c(3, 8:13), ~ as.numeric(.x))) %>%
+  mutate(across(.cols = c(3, 10:15), ~ as.numeric(.x))) %>%
   mutate(
-         sum_n_loans = rowSums(.[, c(8,10,12)]),
-         sum_loan_amt = rowSums(.[, c(9,11,13)])) %>%
-  filter(year >= 2004) %>% select(-assessment_area_number)
+         sum_n_loans = rowSums(.[, c(10,12,14)]),
+         sum_loan_amt = rowSums(.[, c(11,13,15)])) %>%
+  filter(year >= 2009) %>%
+  select(-assessment_area_number, -`msa/md`) %>%
+  
 
 library(data.table)
 
-fwrite(cra_data_temp, paste0(local_path, "cra_data.csv"))
+# fwrite(cra_data_temp, paste0(local_path, "cra_data.csv"))
 
 trans_fwf <- c(10,1,4,30,40,25,2,10,10,10,10)
 col_names2 <- c("resp_id",
@@ -174,14 +181,13 @@ trans_prep_function <- function(x) {
   return(trans)
 }
 
-
 trans_data <- do.call(rbind, lapply(data_list2, trans_prep_function)) %>%
-  filter(year >= 2004) %>% select(-4, -5, -6, -7, -8, -9) %>% mutate(year = as.numeric(year),
+  filter(year >= 2009) %>% select(-5, -6, -7, -8, -9) %>% mutate(year = as.numeric(year),
                                                                      id_rssd = as.numeric(id_rssd),
                                                                      assets = as.numeric(assets))
 
 
-fwrite(trans_data, paste0(local_path, "transmittal.csv"))
+# fwrite(trans_data, paste0(local_path, "transmittal.csv"))
 
 
 
