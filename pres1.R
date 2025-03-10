@@ -143,17 +143,17 @@ cra_prep_function <- function(x) {
 cra_data <- do.call(rbind, lapply(data_list, cra_prep_function))
 
 cra_data_temp <- cra_data %>%
-  mutate(across(.cols = c(3, 10:15), ~ as.numeric(.x))) %>%
+  mutate(across(.cols = c(3, 8:13), ~ as.numeric(.x))) %>%
   mutate(
-         sum_n_loans = rowSums(.[, c(10,12,14)]),
-         sum_loan_amt = rowSums(.[, c(11,13,15)])) %>%
+         sum_n_loans = rowSums(.[, c(8,10,12)]),
+         sum_loan_amt = rowSums(.[, c(9,11,13)])) %>%
   filter(year >= 2009) %>%
-  select(-assessment_area_number, -`msa/md`) %>%
+  select(-6, -7, -8, -9,-10,-11,-12,-13)
   
 
 library(data.table)
 
-# fwrite(cra_data_temp, paste0(local_path, "cra_data.csv"))
+fwrite(cra_data_temp, paste0(local_path, "cra_data.csv"))
 
 trans_fwf <- c(10,1,4,30,40,25,2,10,10,10,10)
 col_names2 <- c("resp_id",
@@ -187,7 +187,7 @@ trans_data <- do.call(rbind, lapply(data_list2, trans_prep_function)) %>%
                                                                      assets = as.numeric(assets))
 
 
-# fwrite(trans_data, paste0(local_path, "transmittal.csv"))
+fwrite(trans_data, paste0(local_path, "transmittal.csv"))
 
 
 
