@@ -18,7 +18,6 @@ When you click the **Knit** button a document will be generated that includes bo
 ```{r, echo = FALSE, warn.conflicts =FALSE, results = 'hide'}
 
 library(tidyverse)
-library(readxl)
 library(data.table)
 library(ggplot2)
 
@@ -32,6 +31,9 @@ cra_data <- read.csv(paste0(local_path, "cra_data.csv"))
 
 transmittal_data <- read.csv(paste0(local_path, "transmittal.csv")) %>% mutate(assets = assets)
 
+acs_data <- read.csv(paste0(local_path,"acs.csv")) %>%
+  mutate(FIPS = str_pad(FIPS, width = 5, pad = "0"))
+
 cra_assets <- left_join(cra_data, transmittal_data, by = c("resp_id", "agency", "year")) %>%
   mutate(portfolio = case_when(
       # 10b CBO
@@ -40,12 +42,18 @@ cra_assets <- left_join(cra_data, transmittal_data, by = c("resp_id", "agency", 
     assets > 10000000 & assets <= 100000000 ~ "RBO",
       # 100b+ LBO
     assets > 100000000 ~ "LBO"
-  )) %>% select(-1, -2, -6, -7, -9, -11, -13)
+  )) %>% select(-1, -2)
 
-f
+county_data <- cra_assets %>%
+  group_by(year, state, county) %>%
+  summarize(num_banks = n(),
+            sum_loan_amt = sum(sum_loan_amt),
+            sum_n_loans = sum(sum_n_loans)) %>% 
+  mutate(state = str_pad(state, width = 2, pad = "0"),
+         county = str_pad(county, width = 3, pad = "0")) %>% 
+  unite(FIPS, state, county, sep = "")
 
-
-
+county_acs_data <- left_join(county_data, acs_data, by = c("year" = "Year", "FIPS"))
 
 ```
 
