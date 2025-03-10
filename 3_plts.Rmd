@@ -40,7 +40,12 @@ cra_assets <- left_join(cra_data, transmittal_data, by = c("resp_id", "agency", 
     assets > 10000000 & assets <= 100000000 ~ "RBO",
       # 100b+ LBO
     assets > 100000000 ~ "LBO"
-  ))
+  )) %>% select(-1, -2, -6, -7, -9, -11, -13)
+
+f
+
+
+
 
 ```
 
@@ -59,13 +64,18 @@ plot1 <- ggplot(data = plot1_data) +
             y = amt_us_sb_loans,
             fill = portfolio, group = portfolio))
 
-
-
 ```
 
 ```{r}
 
-
+   # make this however you want
+plot2_data <- cra_assets %>%
+  filter(state <= 56) %>%
+  mutate(state = str_pad(state, width = 2, pad = "0")) %>% 
+  group_by(year, portfolio) %>%
+  summarize(n = n(),
+            amt_us_sb_loans = sum(sum_loan_amt),
+            n_us_sb_loans = sum(sum_n_loans))
 
 
 
