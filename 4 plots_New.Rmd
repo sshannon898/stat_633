@@ -1,9 +1,23 @@
 ---
-title: "3plots"
-author: "Group 6 - Stephen Shannon, Alex, Swati Nayak"
-date: "2025-03-09"
-output: html_document
+title: "An Analysis of the Community Reinvestment Act"
+subtitle: "An In-depth Look at Black Saber’s Practices"
+author: "Report prepared for Black Saber Software"
+date: "2021-04-22"
+output: xaringan::moon_reader
 ---
+
+class: center, middle, title-slide
+
+# An Analysis of Biases within Hiring, Salaries, and Promotions
+### An In-depth Look at Black Saber’s Practices
+
+**Report prepared for Black Saber Software**  
+*2021-04-22*
+
+---
+
+# Introduction
+This slide deck provides an analysis of...
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -26,7 +40,7 @@ library(plotly)
 
 ```{r, echo = FALSE, warn.conflicts = FALSE, results = 'hide'}
 
-local_path <- "/Users/swati_nayak/Downloads/"
+local_path <- "C:/Users/sshan/Desktop/umass amherst/sta633/stat_633/"
 
 cra_data <- read.csv(paste0(local_path, "cra_data.csv"))
 
@@ -56,15 +70,15 @@ county_data <- cra_assets %>%
 
 county_acs_data <- left_join(county_data, acs_data, by = c("year" = "Year", "FIPS"))
 
-
-
-
-
-
-
 ```
 
-```{r}
+
+\newpage
+
+### Introduction
+
+
+```{r, echo = FALSE, warn.conflicts = FALSE,}
 
 # https://sshannon898.shinyapps.io/stat_633/
 
@@ -78,14 +92,17 @@ plot1_data <- cra_assets %>%
 
 plot1 <- ggplot(data = plot1_data) +
   geom_area(aes(x = year,
-            y = amt_us_sb_loans,
-            fill = portfolio, group = portfolio))
+            y = amt_us_sb_loans/1000000,
+            fill = portfolio, group = portfolio)) +
+  theme_bw(base_size = 16) +
+  labs(x = "",
+       y = "Total Lending (Billions $)")
 
 plot1
 
 ```
 
-```{r}
+```{r, echo = FALSE, warn.conflicts = FALSE,}
 
 ## WITHOUT grouping by portfolio
 ## Also takes forever to compile, so perhaps filter out some years?
@@ -102,122 +119,97 @@ plot1
 #        y = "Log of Median Household Income",
 #        title = "Loan Amounts vs. Median Household Income")
 
-plot2 <- county_acs_data |>
-  filter(!is.na(sum_loan_amt), !is.na(Median_HH_Income)) |>
-  ggplot() +
-  geom_point(mapping = aes(x = sum_loan_amt,
-                           y = Median_HH_Income,
-                           frame = year,
-                           # color = year,
-                           text = paste0("County: ", County, "<br>Total Loan Amount: ", sum_loan_amt, "<br>Median Household Income: ", Median_HH_Income, "<br>Year:", year))) +
-  labs(x = "Loan Amount Sum",
-       y = "Median Household Income",
-       title = "Loan Amounts vs. Median Household Income")
- 
+# plot2 <- county_acs_data |>
+#   filter(!is.na(sum_loan_amt), !is.na(Median_HH_Income)) |>
+#   ggplot() +
+#   geom_point(mapping = aes(x = sum_loan_amt,
+#                            y = Median_HH_Income,
+#                            frame = year,
+#                            # color = year,
+#                            text = paste0("County: ", County, "<br>Total Loan Amount: ", sum_loan_amt, "<br>Median Household Income: ", Median_HH_Income, "<br>Year:", year))) +
+#   labs(x = "Loan Amount Sum",
+#        y = "Median Household Income",
+#        title = "Loan Amounts vs. Median Household Income") +
+#   theme_bw(base_size = 16)
+#  
+# 
+# ggplotly(plot2,
+#          tooltip = "text")
+# 
 
-ggplotly(plot2,
-         tooltip = "text")
 ```
+
+```{r, echo = FALSE, warn.conflicts = FALSE,}
+
+
+plot4 <- county_acs_data |>
+  group_by(year, portfolio) |>
+  summarize(mean_proportion = mean(sum_loan_amt / sum_n_loans, na.rm = TRUE)) |>
+  ggplot() +
+  geom_point(mapping = aes(x = year,
+                           y = mean_proportion,
+                           group = portfolio,
+                           color = portfolio,
+                           text = paste0("Year: ", year, "<br>Mean Loan Amount: ", round(mean_proportion), "<br>Portfolio: ", portfolio))) +
+  geom_line(mapping = aes(x = year,
+                          y = mean_proportion,
+                          color = portfolio)) +
+  labs(x = "",
+       y = "Mean Loan Amount (Thousands)") + theme_bw(base_size = 16)
+ 
+# plot4
+
+
+ggplotly(plot4,
+         tooltip = "text")
+
+
+```
+
+
+
 
 ## Plot 3
 
-```{r}
-
-## WITH portfolio grouping
-
-(plot3 <- county_acs_data |>
-  filter(!is.na(year), !is.na(sum_n_loans), !is.na(sum_loan_amt)) |>
-  group_by(portfolio, year) |>
-  summarize(total_sum_n_loans = sum(sum_n_loans),
-            avg_sum_loan_amounts = mean(sum_loan_amt)) |>
-  ggplot() +
-  geom_line(mapping = aes(x = year, y = avg_sum_loan_amounts, color = portfolio)) +
-  labs(x = "Year",
-       y = "Average Loan Amount",
-       title = "Total Loans Given Out Each Year by Bank Type"))
-```
 
 ```{r} 
+
 # Load required packages
-library(dplyr)
-library(plotly)
+
 library(RColorBrewer)
 
-# 1. Simulate example data (replace with your actual dataset)
-set.seed(123)
-county_acs_data <- data.frame(
-  year = rep(2009:2023, each = 50),
-  Population = sample(1000:10000, 50 * 15, replace = TRUE),
-  sum_loan_amt = sample(50000:500000, 50 * 15, replace = TRUE),
-  Median_HH_Income = sample(30000:100000, 50 * 15, replace = TRUE)
-)
 
 # 2. Calculate loan amount per capita
-county_acs_data <- county_acs_data %>%
+county_acs_data_temp <- county_acs_data %>%
+  group_by(year) %>%
   mutate(loan_per_capita = sum_loan_amt / Population)
 
 # 3. Classify counties into income categories using quantiles
-quantiles <- quantile(county_acs_data$Median_HH_Income, probs = c(0.33, 0.66), na.rm = TRUE)
-county_acs_data <- county_acs_data %>%
-  mutate(income_category = case_when(
-    Median_HH_Income <= quantiles[1] ~ "poor",
-    Median_HH_Income <= quantiles[2] ~ "middle",
-    TRUE ~ "rich"
+# quantiles <- quantile(county_acs_data_temp$Median_HH_Income, probs = c(0.33, 0.66), na.rm = TRUE)
+county_acs_data_temp <- county_acs_data_temp %>%
+  group_by(year) %>%
+  mutate(quantile_group = ntile(Median_HH_Income, 3)) %>%
+  mutate(quantile_group = case_when(
+    quantile_group == 1 ~ "poor",
+    quantile_group == 2 ~ "middle",
+    quantile_group == 3 ~ "Rich"
   ))
 
 # 4. Group data by year and income category, then compute the average loan per capita
 avg_loans <- county_acs_data %>%
-  group_by(year, income_category) %>%
-  summarise(avg_loan = mean(loan_per_capita, na.rm = TRUE), .groups = "drop")
+  group_by(year, portfolio, income_category) %>%
+  summarise(avg_loan = mean(loan_per_capita, na.rm = TRUE))
 
-# 5. Create a polished, interactive Plotly chart
-p <- plot_ly(
-  data = avg_loans,
-  x = ~year,
-  y = ~avg_loan,
-  color = ~income_category,
-  colors = brewer.pal(n = 3, name = "Set1"),
-  type = 'scatter',
-  mode = 'lines+markers',
-  marker = list(size = 8,
-                line = list(width = 1, color = 'black')),
-  line = list(width = 2),
-  hoverinfo = 'text',
-  text = ~paste0("<b>Year:</b> ", year,
-                 "<br><b>Category:</b> ", income_category,
-                 "<br><b>Avg Loan/Capita:</b> ", round(avg_loan, 2))
-) %>%
-  layout(
-    title = list(text = "Average Small Business Loan per Capita by Income Category",
-                 x = 0.5,
-                 font = list(size = 20, family = "Arial")),
-    xaxis = list(
-      title = list(text = "Year", font = list(size = 16, family = "Arial")),
-      tickmode = "linear",
-      tickfont = list(size = 14, family = "Arial"),
-      showgrid = TRUE,
-      gridcolor = "#e5e5e5"
-    ),
-    yaxis = list(
-      title = list(text = "Average Loan Amount per Capita", font = list(size = 16, family = "Arial")),
-      tickfont = list(size = 14, family = "Arial"),
-      showgrid = TRUE,
-      gridcolor = "#e5e5e5"
-    ),
-    legend = list(
-      title = list(text = "<b>Income Category</b>", font = list(size = 16, family = "Arial")),
-      font = list(size = 14, family = "Arial")
-    ),
-    hovermode = "closest",
-    margin = list(l = 80, r = 50, b = 60, t = 80),
-    width = 1000,
-    height = 700,
-    plot_bgcolor = "#fff",
-    paper_bgcolor = "#fff"
-  )
 
-# Display the interactive plot
+p <- ggplot(data = avg_loans,
+            aes(x = year, y = avg_loan, color = income_category, group = income_category)) + 
+  geom_line() +
+  theme_bw(base_size = 16) +
+  labs(x = "",
+       y = "Avg. Loan per person") + facet_wrap(~portfolio)
+
 p
+
 ```
 
 "https://sshannon898.shinyapps.io/stat_633/"
