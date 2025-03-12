@@ -16,8 +16,144 @@ class: center, middle, title-slide
 
 ---
 
-# Introduction
-This slide deck provides an analysis of...
+newpage
+
+
+### Introduction 
+
+
+* Small businesses serve as the backbone of the economy, fostering innovation, job creation, and local development. 
+
+* However, access to financial resources remains a significant barrier to their growth, often influenced by the type of financial institutions and demographic factors.
+
+
+* This study examines the lending patterns of different banks to understand their role in supporting small businesses. 
+
+  * Specifically, it focuses on **Community Banks (CBOs), Large Banks (LBOs), and Regional Banks (RBOs)**.
+
+  * The goal is to analyze how these institutions distribute small business loans and whether certain banks provide more access than others.
+
+
+* Additionally, this study investigates the impact of **demographic factors** on loan distribution and approval rates, including:
+
+  * **Income levels** – Do lower-income areas receive fewer loans?
+
+  * **Race** – Are certain racial groups disproportionately affected in loan approvals?
+
+  * **Geographic location** – How do urban and rural areas differ in accessing small business loans?
+
+
+
+\newpage
+
+
+### Research Question
+
+
+* This study examines:
+
+  * **Which types of banks engage in small business lending** – Understanding the role of Community Banks (CBOs), Large Banks (LBOs), and Regional Banks (RBOs).
+
+  * **How demographic factors influence loan distribution** – Analyzing the impact of income, race, and geographic location on loan approvals.
+
+  * **How these relationships have evolved over time** – Examining trends in lending patterns and how they have changed due to economic and policy shifts.
+
+
+
+
+### Key Findings
+
+
+\newpage 
+
+
+### Why is this important?
+
+
+* Total Lending Trends:
+
+  * Large Banks (LBOs) continue to dominate small business lending, issuing significantly higher loan amounts than Community Banks (CBOs) and Regional Banks (RBOs).
+
+  * The total volume of small business loans has increased over time, but this growth is not evenly distributed across different bank types or geographic locations.
+
+
+* Impact of Demographics on Loan Distribution:
+
+  * Counties with higher median household income consistently receive higher loan amounts, reinforcing economic disparities.
+
+  * Lower-income counties receive disproportionately fewer loans despite their business needs, suggesting a systemic bias in lending patterns.
+
+  * The relationship between loan amount and income is stronger in wealthier regions, meaning banks are more willing to lend to higher-income areas while underserved regions struggle with access to credit.
+
+
+* Evolution of Lending Behavior Over Time:
+
+  * Loan approval patterns have shifted in response to economic and regulatory changes.
+
+  * Certain years show dramatic changes in lending behavior, possibly due to policy adjustments, financial crises, or shifts in banking strategies.
+
+  * The average loan amount per capita has increased for wealthier regions but remained stagnant for lower-income areas, widening the economic gap.
+
+
+* Portfolio-Based Lending Differences:
+
+  * LBOs lend in larger amounts but concentrate their lending in economically prosperous areas.
+
+  * CBOs and RBOs provide more localized and smaller loans, which can be crucial for rural or lower-income regions.
+
+  * Over time, the proportion of loans from CBOs and RBOs has declined, further reducing financing options for small businesses in disadvantaged areas.
+
+
+* Loan Amounts vs. Number of Loans:
+
+  * The data shows a growing gap between the total number of loans issued and the actual loan amounts given.
+
+  * While large banks issue high-value loans, the number of small business loans issued has not increased at the same rate, meaning fewer small businesses receive funding despite rising total loan amounts.
+
+
+* Geographic Inequality in Lending:
+
+  * Lending is concentrated in metropolitan and high-income regions, leaving rural areas and lower-income communities with fewer resources.
+
+  * The Community Reinvestment Act (CRA) plays a role in shaping these trends, but it has not fully addressed the disparities in lending practices.
+
+
+* These findings underscore the systemic biases in small business lending and highlight the critical role of financial institutions and policymakers in ensuring fair and equitable access to credit.
+
+
+
+\newpage
+
+
+### The data
+
+
+* CBO/LBO/RBO Definition:
+
+  * **Community Banks (CBOs):** Smaller, locally focused banks that primarily serve small businesses and rural communities.
+
+  * **Regional Banks (RBOs):** Mid-sized banks that operate across multiple states, providing a mix of local and corporate banking services.
+
+  * **Large Banks (LBOs):** Major financial institutions with nationwide or global operations that provide high-volume lending but often favour large businesses over small enterprises.
+
+
+* CRA (Community Reinvestment Act):
+
+  * A federal law enacted in 1977 to prevent discriminatory lending practices (redlining).
+
+  * Requires banks to meet the credit needs of low- and moderate-income communities.
+
+  * Encourages transparency in lending and promotes equal access to credit.
+
+
+* ACS (American Community Survey):
+
+  * A nationwide survey conducted by the U.S. Census Bureau to collect detailed demographic, economic, and housing data.
+
+  * Provides critical information on population characteristics, income levels, and housing patterns, which are used to analyze lending disparities.
+
+  * Helps in identifying which communities face challenges in accessing credit and financial services.
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -102,42 +238,6 @@ plot1
 
 ```
 
-```{r, echo = FALSE, warn.conflicts = FALSE,}
-
-## WITHOUT grouping by portfolio
-## Also takes forever to compile, so perhaps filter out some years?
-## Also I made two plots: one with a log transform and one without.
-
-# plot2_log <- county_acs_data |>
-#   filter(!is.na(sum_loan_amt), !is.na(Median_HH_Income)) |>
-#   ggplot() +
-#   geom_point(mapping = aes(x = log(sum_loan_amt),
-#                            y = log(Median_HH_Income),
-#                            color = year,
-#                            text = paste0("County: ", County, "<br>Total Loan Amount: ", sum_loan_amt, "<br>Median Household Income: ", Median_HH_Income, "<br>Year:", year))) +
-#   labs(x = "Log of Loan Amount Sum",
-#        y = "Log of Median Household Income",
-#        title = "Loan Amounts vs. Median Household Income")
-
-# plot2 <- county_acs_data |>
-#   filter(!is.na(sum_loan_amt), !is.na(Median_HH_Income)) |>
-#   ggplot() +
-#   geom_point(mapping = aes(x = sum_loan_amt,
-#                            y = Median_HH_Income,
-#                            frame = year,
-#                            # color = year,
-#                            text = paste0("County: ", County, "<br>Total Loan Amount: ", sum_loan_amt, "<br>Median Household Income: ", Median_HH_Income, "<br>Year:", year))) +
-#   labs(x = "Loan Amount Sum",
-#        y = "Median Household Income",
-#        title = "Loan Amounts vs. Median Household Income") +
-#   theme_bw(base_size = 16)
-#  
-# 
-# ggplotly(plot2,
-#          tooltip = "text")
-# 
-
-```
 
 ```{r, echo = FALSE, warn.conflicts = FALSE,}
 
@@ -155,7 +255,7 @@ plot4 <- county_acs_data |>
                           y = mean_proportion,
                           color = portfolio)) +
   labs(x = "",
-       y = "Mean Loan Amount (Thousands)") + theme_bw(base_size = 16)
+       y = "Avg. Loan Size (Thousands)") + theme_bw(base_size = 16)
  
 # plot4
 
@@ -176,7 +276,7 @@ ggplotly(plot4,
 
 # Load required packages
 
-library(RColorBrewer)
+# library(RColorBrewer)
 
 
 # 2. Calculate loan amount per capita
@@ -187,30 +287,35 @@ county_acs_data_temp <- county_acs_data %>%
 # 3. Classify counties into income categories using quantiles
 # quantiles <- quantile(county_acs_data_temp$Median_HH_Income, probs = c(0.33, 0.66), na.rm = TRUE)
 county_acs_data_temp <- county_acs_data_temp %>%
+  filter(is.na(County) != TRUE) %>%
   group_by(year) %>%
   mutate(quantile_group = ntile(Median_HH_Income, 3)) %>%
   mutate(quantile_group = case_when(
-    quantile_group == 1 ~ "poor",
-    quantile_group == 2 ~ "middle",
+    quantile_group == 1 ~ "Poor",
+    quantile_group == 2 ~ "Middle",
     quantile_group == 3 ~ "Rich"
   ))
 
 # 4. Group data by year and income category, then compute the average loan per capita
-avg_loans <- county_acs_data %>%
-  group_by(year, portfolio, income_category) %>%
-  summarise(avg_loan = mean(loan_per_capita, na.rm = TRUE))
+avg_loans <- county_acs_data_temp %>%
+  group_by(year, portfolio, quantile_group) %>%
+  summarise(avg_loan_amt = mean(sum_loan_amt, na.rm = TRUE))
 
 
 p <- ggplot(data = avg_loans,
-            aes(x = year, y = avg_loan, color = income_category, group = income_category)) + 
+            aes(x = year, y = avg_loan_amt/1000, color = quantile_group, group = quantile_group)) + 
   geom_line() +
   theme_bw(base_size = 16) +
   labs(x = "",
-       y = "Avg. Loan per person") + facet_wrap(~portfolio)
+       y = "Avg. Loan Size by County Income") +
+  facet_wrap(~portfolio) + scale_y_continuous()
 
 p
 
 ```
+Figure 3. Average Lending to counties by 
+
+
 
 "https://sshannon898.shinyapps.io/stat_633/"
 
