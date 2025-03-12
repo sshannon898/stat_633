@@ -1,0 +1,261 @@
+---
+title: "An Analysis of the Community Reinvestment Act"
+author: "Stephen Shannon, Swati Nayak, Alex Medeiros"
+date: "2021-04-22"
+output: ioslides_presentation
+---
+
+
+
+## Introduction 
+
+
+  * Small businesses serve as the backbone of the economy, fostering innovation, job creation, and local development. 
+
+  * However, access to financial resources remains a significant barrier to their growth, often influenced by the type of financial institutions and demographic factors.
+
+
+  * This study examines the lending patterns of different banks to understand their role in supporting small businesses. 
+
+  * Specifically, it focuses on **Community Banks (CBOs), Large Banks (LBOs), and Regional Banks (RBOs)**.
+
+  * The goal is to analyze how these institutions distribute small business loans and whether certain banks provide more access than others.
+
+
+## Importance
+
+  * Additionally, this study investigates the impact of **demographic factors** on loan distribution and approval rates, including:
+
+  * _Income levels_ – Do lower-income areas receive fewer loans?
+
+  * _Race_ – Are certain racial groups disproportionately affected in loan approvals?
+
+  * _Geographic location_ – How do urban and rural areas differ in accessing small business loans?
+
+
+## Research Question
+
+
+  * This study examines:
+
+  * _Which types of banks engage in small business lending_ – Understanding the role of Community Banks (CBOs), Large Banks (LBOs), and Regional Banks (RBOs).
+
+  * _How demographic factors influence loan distribution_ – Analyzing the impact of income, race, and geographic location on loan approvals.
+
+  * _How these relationships have evolved over time_ – Examining trends in lending patterns and how they have changed due to economic and policy shifts.
+
+
+
+
+## Key Findings?
+
+  * Total Lending Trends:
+
+  * Large Banks (LBOs) continue to dominate small business lending, issuing significantly higher loan amounts than Community Banks (CBOs) and Regional Banks (RBOs).
+
+  * The relationship between loan amount and income is stronger in wealthier regions, meaning banks are more willing to lend to higher-income areas while underserved regions struggle with access to credit.
+
+## Portfolio-Based Lending Differences:
+
+  * LBOs lend in larger amounts but concentrate their lending in economically prosperous areas.
+
+  * Over time, the proportion of loans from CBOs and RBOs has declined, further reducing financing options for small businesses in disadvantaged areas.
+
+
+## The data
+
+
+* CBO/LBO/RBO Definition:
+
+  * CBOS: Less than 10b, RBOs 10b - 100b, LBOs: 100b+
+
+* CRA (Community Reinvestment Act): A federal law enacted in 1977 to prevent discriminatory lending practices (redlining).
+
+  * Timeseries, lending by bank to individual counties
+
+* ACS (American Community Survey): A nationwide survey conducted by the U.S. Census Bureau to collect detailed demographic, economic, and housing data.
+
+  * Demographic Information such as Household Income and population
+
+
+```{r setup, include=FALSE, echo = FALSE, warn.conflicts =FALSE, results = 'hide'}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE, warn.conflicts =FALSE, results = 'hide'}
+
+library(tidyverse)
+library(data.table)
+library(ggplot2)
+library(plotly)
+
+```
+
+```{r, echo = FALSE, warn.conflicts = FALSE, results = 'hide', message=FALSE, warning=FALSE}
+
+local_path <- "C:/Users/sshan/Desktop/umass amherst/sta633/stat_633/"
+
+cra_data <- read.csv(paste0(local_path, "cra_data.csv"))
+
+transmittal_data <- read.csv(paste0(local_path, "transmittal.csv")) %>% mutate(assets = assets)
+
+acs_data <- read.csv(paste0(local_path,"acs.csv")) %>%
+  mutate(FIPS = str_pad(FIPS, width = 5, pad = "0"))
+
+cra_assets <- left_join(cra_data, transmittal_data, by = c("resp_id", "agency", "year")) %>%
+  mutate(portfolio = case_when(
+      # 10b CBO
+    assets <= 10000000 ~ "CBO",
+      # 10b - 100b RBO
+    assets > 10000000 & assets <= 100000000 ~ "RBO",
+      # 100b+ LBO
+    assets > 100000000 ~ "LBO"
+  )) %>% select(-1, -2)
+
+county_data <- cra_assets %>%
+  group_by(year, state, county, portfolio) %>%
+  summarize(num_banks = n(),
+            sum_loan_amt = sum(sum_loan_amt),
+            sum_n_loans = sum(sum_n_loans)) %>% 
+  mutate(state = str_pad(state, width = 2, pad = "0"),
+         county = str_pad(county, width = 3, pad = "0")) %>% 
+  unite(FIPS, state, county, sep = "")
+
+county_acs_data <- left_join(county_data, acs_data, by = c("year" = "Year", "FIPS"))
+
+```
+
+
+## Plot 1
+
+
+```{r, echo = FALSE, warn.conflicts = FALSE, message=FALSE, warning=FALSE}
+
+# https://sshannon898.shinyapps.io/stat_633/
+
+plot1_data <- cra_assets %>%
+  filter(state <= 56) %>%
+  mutate(state = str_pad(state, width = 2, pad = "0")) %>% 
+  group_by(year, portfolio) %>%
+  summarize(n = n(),
+            amt_us_sb_loans = sum(sum_loan_amt),
+            n_us_sb_loans = sum(sum_n_loans))
+
+plot1 <- ggplot(data = plot1_data) +
+  geom_area(aes(x = year,
+            y = amt_us_sb_loans/1000000,
+            fill = portfolio, group = portfolio)) +
+  theme_bw(base_size = 16) +
+  labs(x = "",
+       y = "Total Lending (Billions $)")
+
+plot1
+
+```
+
+Figure 1. The total small business lending amount by Bank type. 
+
+ 
+## Plot 2 
+ 
+```{r, echo = FALSE, warn.conflicts = FALSE, message=FALSE, warning=FALSE}
+
+
+plot4 <- county_acs_data |>
+  group_by(year, portfolio) |>
+  summarize(mean_proportion = mean(sum_loan_amt / sum_n_loans, na.rm = TRUE)) |>
+  ggplot() +
+  geom_point(mapping = aes(x = year,
+                           y = mean_proportion,
+                           group = portfolio,
+                           color = portfolio,
+                           text = paste0("Year: ", year, "<br>Mean Loan Amount: ", round(mean_proportion), "<br>Portfolio: ", portfolio))) +
+  geom_line(mapping = aes(x = year,
+                          y = mean_proportion,
+                          color = portfolio)) +
+  labs(x = "",
+       y = "Avg. Loan Size (Thousands)") + theme_bw(base_size = 16)
+ 
+plot4
+
+
+# ggplotly(plot4,
+#          tooltip = "text")
+
+
+```
+
+Figure 2. Average Loan size by bank type. 
+
+
+## Plot 3
+
+
+```{r, echo = FALSE, warn.conflicts = FALSE, message=FALSE, warning=FALSE} 
+
+# Load required packages
+
+# library(RColorBrewer)
+
+
+# 2. Calculate loan amount per capita
+county_acs_data_temp <- county_acs_data %>%
+  group_by(year) %>%
+  mutate(loan_per_capita = sum_loan_amt / Population)
+
+# 3. Classify counties into income categories using quantiles
+# quantiles <- quantile(county_acs_data_temp$Median_HH_Income, probs = c(0.33, 0.66), na.rm = TRUE)
+county_acs_data_temp <- county_acs_data_temp %>%
+  filter(is.na(County) != TRUE) %>%
+  group_by(year) %>%
+  mutate(quantile_group = ntile(Median_HH_Income, 3)) %>%
+  mutate(quantile_group = case_when(
+    quantile_group == 1 ~ "Poor",
+    quantile_group == 2 ~ "Middle",
+    quantile_group == 3 ~ "Rich"
+  ))
+
+# 4. Group data by year and income category, then compute the average loan per capita
+avg_loans <- county_acs_data_temp %>%
+  group_by(year, portfolio, quantile_group) %>%
+  summarise(avg_loan_amt = mean(sum_loan_amt, na.rm = TRUE))
+
+
+p <- ggplot(data = avg_loans,
+            aes(x = year, y = avg_loan_amt/1000, color = quantile_group, group = quantile_group)) + 
+  geom_line() +
+  theme_bw(base_size = 16) +
+  labs(x = "",
+       y = "Avg. Loan Size by County Income",
+       color = "County Income") +
+  facet_wrap(~portfolio) + scale_y_continuous()
+
+p
+
+```
+
+Figure 3. Average Lending to counties of different income groups by bank size. 
+
+## Shiny App
+
+ Geographic Inequality in Lending:
+
+  * Lending is concentrated in metropolitan and high-income regions, leaving rural areas and lower-income communities with fewer resources.
+
+"https://sshannon898.shinyapps.io/stat_633/"
+
+
+## Limitations
+
+* This study does not include demographic variables, such as race, age, and sex.
+
+* There is no data about loan approval and credit scores, which could certainly skew some of the data.
+
+* Income across counties is very skewed, and this influences our results.
+
+* Bank Categorizations are static across time, and a $10b threshold may not hold true in 2004 for a true "Community Bank"
+
+
+## The end
+
+Thank you!
